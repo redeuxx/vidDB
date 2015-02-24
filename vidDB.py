@@ -4,16 +4,8 @@ import os
 import operator
 import tkinter as tk
 
-class guiBuilder:
-
-    def test1(self, event, arg):
-        print(dir(event))
-        print(arg.get())
-
-
 def main():
     root = tk.Tk()
-    guibuilder = guiBuilder()
     root.title('vidDB.py')
 
     entry_string = tk.StringVar()
@@ -21,15 +13,14 @@ def main():
     directory_label = tk.Label(root, text="Directory")
     directory_label.grid(row=0, column=0, sticky=tk.W)
     directory_entry = tk.Entry(root, width=200, textvariable=entry_string)
+    # next line: use lambda to pass directory name variable from GUI entry box
     directory_entry.bind("<Return>", lambda event, arg=entry_string: test(event, arg))
     directory_entry.grid(row=0, column=1, stick=tk.EW)
 
     root.mainloop()
 
 def test(event, arg):
-
-    # TODO Allow directory names without trailing slashes
-    directory = arg.get()
+    directory = arg.get()  # get directory from GUI entry box
     if True == os.path.isdir(directory):
         dir_path = os.listdir(directory)
         print(type(dir))
@@ -38,7 +29,7 @@ def test(event, arg):
         print('The current directory is:')
 
         for files in dir_path:
-            fullpath = directory + files
+            fullpath = os.path.join(directory, files)
             if True == os.path.isfile(fullpath):
                 a_list.append([files, int(getFileSize("MB", os.path.getsize(fullpath)))])
         for a in sorted(a_list, key=operator.itemgetter(1)):
