@@ -23,7 +23,7 @@ def main():
     directory_entry = tk.Entry(root, width=200, textvariable=entry_string)
     directory_entry.bind("<Return>", lambda event, arg=entry_string: test(event, arg))
     directory_entry.grid(row=0, column=1, stick=tk.EW)
-sd
+
     root.mainloop()
 
 def test(event, arg):
