@@ -46,5 +46,4 @@ def getFileSize(wanted_size, size):
 
     return return_size
 
-
 if __name__ == "__main__": main()
