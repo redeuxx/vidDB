@@ -50,20 +50,27 @@ class DrawGui:
         self.tree.heading("Filename", text="Filename")
         self.tree.heading("Size", text="Size")
         self.tree.grid(row=2, sticky=tk.EW, columnspan=2)
+        #  END Filename Tree
 
-    def build_dir_list(self, event):
+    def build_dir_list(self, _event):
         self.directory_name = self.directory_entry.get()
         for var in self.tree.get_children():
             self.tree.delete(var)
 
         dir_list = self.dirfuncs.directory_list(self.directory_name)
         if dir_list != False:
-
             for a in dir_list:
                 self.tree.insert("", "end", values=a)
             # TODO: Adjust column width to longest filename
             # TODO: Add size indicator (eg: MB, KB, GB)
             # self.tree.column("Filename", width=50)
+            self.tree.bind("<Double-1>", self.dir_list_double_click)
+
+    def dir_list_double_click(self, _event):
+        item_id = self.tree.focus()
+        item_name = os.path.join(self.directory_name, self.tree.item(item_id)['values'][0])
+        print(item_name)
+        os.startfile(item_name)
 
 
 class DirFuncs:
