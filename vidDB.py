@@ -12,6 +12,8 @@ class DrawGui:
 
     def __init__(self, root):
         self.dirfuncs = DirFuncs()
+        self.entry_string = tk.StringVar()
+        self.right_click_menu = tk.Menu(root, tearoff=0)  # Creates the right click menu in directory list
 
         # START MENU BAR
         self.theMenuBar = tk.Menu(root)
@@ -31,15 +33,13 @@ class DrawGui:
         self.theMenuBar.add_cascade(label="Help", menu=self.theAboutMenu)
         # END MENU BAR
 
-        self.entry_string = tk.StringVar()
-
+        #  START Directory Entry Box
         self.directory_label = tk.Label(root, text="Directory")
         self.directory_label.grid(row=1, column=0, sticky=tk.W)
         self.directory_entry = tk.Entry(root, width=200, textvariable=self.entry_string)
-        # next line: use lambda to pass directory name variable from GUI entry box
-        # self.directory_entry.bind("<Return>", (lambda event, arg=self.entry_string: DirFuncs.getDir(event, arg)))
         self.directory_entry.bind("<Return>", self.build_dir_list)
         self.directory_entry.grid(row=1, column=1, stick=tk.EW)
+        #  END Directory Entry Box
 
         #  START Filename Tree
         self.tree = ttk.Treeview(root)
@@ -52,25 +52,35 @@ class DrawGui:
         self.tree.grid(row=2, sticky=tk.EW, columnspan=2)
         #  END Filename Tree
 
-    def build_dir_list(self, _event):
+        # START Right click menu on directory list
+        self.right_click_menu.add_command(label="Open", command=self.dir_list_open)
+        self.right_click_menu.add_command(label="Something Something", command=lambda: print("hola!"))
+        self.tree.bind("<Button-3>", self.dir_list_right_click_menu)
+        # END Right click menu on directory list
+
+    def build_dir_list(self, event=None):
         self.directory_name = self.directory_entry.get()
         for var in self.tree.get_children():
             self.tree.delete(var)
 
         dir_list = self.dirfuncs.directory_list(self.directory_name)
-        if dir_list != False:
+        if dir_list:
             for a in dir_list:
                 self.tree.insert("", "end", values=a)
             # TODO: Adjust column width to longest filename
             # TODO: Add size indicator (eg: MB, KB, GB)
             # self.tree.column("Filename", width=50)
-            self.tree.bind("<Double-1>", self.dir_list_double_click)
+            self.tree.bind("<Double-1>", self.dir_list_open)
+        else:
+            pass
 
-    def dir_list_double_click(self, _event):
+    def dir_list_open(self, event=None):
         item_id = self.tree.focus()
         item_name = os.path.join(self.directory_name, self.tree.item(item_id)['values'][0])
-        print(item_name)
         os.startfile(item_name)
+
+    def dir_list_right_click_menu(self, event):
+        self.right_click_menu.post(event.x_root, event.y_root)
 
 
 class DirFuncs:
@@ -83,11 +93,11 @@ class DirFuncs:
         del self.a_list[:]
         del self.dir_list[:]
 
-        if True == os.path.isdir(directory):
+        if os.path.isdir(directory):
             dir_path = os.listdir(directory)
             for files in dir_path:
                 fullpath = os.path.join(directory, files)
-                if True == os.path.isfile(fullpath):
+                if os.path.isfile(fullpath):
                     self.a_list.append([files, int(getFileSize("MB", os.path.getsize(fullpath)))])
             for a in sorted(self.a_list, key=operator.itemgetter(1)):
                 self.dir_list.append([a[0], a[1]])
@@ -108,7 +118,7 @@ def main():
 
 
 def getFileSize(wanted_size, size):
-    global return_size
+    # global return_size
     if wanted_size == "KB":
         return_size = size / 8192
     elif wanted_size == "MB":
@@ -116,4 +126,5 @@ def getFileSize(wanted_size, size):
 
     return return_size
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()
