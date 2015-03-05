@@ -6,10 +6,10 @@ import tkinter as tk
 from tkinter import ttk
 from sys import exit
 import tkinter.messagebox
+import tkinter.filedialog
 
 
 class DrawGui:
-
     def __init__(self, root):
         self.dirfuncs = DirFuncs()
         self.entry_string = tk.StringVar()
@@ -20,10 +20,12 @@ class DrawGui:
         root.config(menu=self.theMenuBar)
 
         self.theFileMenu = tk.Menu(self.theMenuBar, tearoff=0)  # File sub menu
+        self.theFileMenu.add_command(label="New Database", command=self.create_new_database)
         self.theFileMenu.add_command(label="Exit", command=lambda: exit(0))
         self.theAboutMenu = tk.Menu(self.theMenuBar, tearoff=0)  # Help sub menu
-        self.theAboutMenu.add_command(label="About", command=lambda: tk.messagebox.showinfo("About",
-            """
+        self.theAboutMenu.add_command(label="About", command=lambda: tk.messagebox.showinfo
+        ("About",
+         """
             vidDB.py
             by Vernon Wenberg III
             http://ribbed.us
@@ -33,18 +35,18 @@ class DrawGui:
         self.theMenuBar.add_cascade(label="Help", menu=self.theAboutMenu)
         # END MENU BAR
 
-        #  START Directory Entry Box
+        # START Directory Entry Box
         self.directory_label = tk.Label(root, text="Directory")
         self.directory_label.grid(row=1, column=0, sticky=tk.W)
         self.directory_entry = tk.Entry(root, width=200, textvariable=self.entry_string)
         self.directory_entry.bind("<Return>", self.build_dir_list)
         self.directory_entry.grid(row=1, column=1, stick=tk.EW)
-        #  END Directory Entry Box
+        # END Directory Entry Box
 
-        #  START Filename Tree
+        # START Filename Tree
         self.tree = ttk.Treeview(root)
         self.tree["columns"] = ("Filename", "Size")
-        self.tree["show"] = 'headings' # hide the first column
+        self.tree["show"] = 'headings'  # hide the first column
         self.tree.column("Filename", width=700)
         self.tree.column("Size", width=20)
         self.tree.heading("Filename", text="Filename")
@@ -82,9 +84,14 @@ class DrawGui:
     def dir_list_right_click_menu(self, event):
         self.right_click_menu.post(event.x_root, event.y_root)
 
+    def create_new_database(self):
+        self.database_location = tk.filedialog.asksaveasfilename(title="Create new database",
+                                                                 filetypes=[("Video Database", "*.vdb")],
+                                                                 defaultextension=".vdb")
+        print(self.database_location)
+
 
 class DirFuncs:
-
     def __init__(self):
         self.a_list = []
         self.dir_list = []
@@ -98,7 +105,7 @@ class DirFuncs:
             for files in dir_path:
                 fullpath = os.path.join(directory, files)
                 if os.path.isfile(fullpath):
-                    self.a_list.append([files, int(getFileSize("MB", os.path.getsize(fullpath)))])
+                    self.a_list.append([files, int(get_file_size("MB", os.path.getsize(fullpath)))])
             for a in sorted(self.a_list, key=operator.itemgetter(1)):
                 self.dir_list.append([a[0], a[1]])
 
@@ -117,14 +124,14 @@ def main():
     root.mainloop()
 
 
-def getFileSize(wanted_size, size):
-    # global return_size
+def get_file_size(wanted_size, size):
     if wanted_size == "KB":
         return_size = size / 8192
     elif wanted_size == "MB":
         return_size = size / 1048576
 
     return return_size
+
 
 if __name__ == "__main__":
     main()
