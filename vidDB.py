@@ -24,8 +24,8 @@ class DrawGui:
         self.theFileMenu.add_command(label="Exit", command=lambda: exit(0))
         self.theAboutMenu = tk.Menu(self.theMenuBar, tearoff=0)  # Help sub menu
         self.theAboutMenu.add_command(label="About", command=lambda: tk.messagebox.showinfo
-        ("About",
-         """
+            ("About",
+             """
             vidDB.py
             by Vernon Wenberg III
             http://ribbed.us
