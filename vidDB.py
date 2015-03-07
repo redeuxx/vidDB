@@ -11,14 +11,26 @@ import tkinter.filedialog
 
 
 class DrawGui:
-    def __init__(self, root):
+    def __init__(self):
+        self.root = tk.Tk()
+        self.create_widgets(self.root)
+        self.root.title('vidDB.py')
+        self.root.state("zoomed")
+        self.root.mainloop()
+
+    def create_widgets(self, root):
         self.dirfuncs = DirFuncs()
         self.entry_string = tk.StringVar()
-        self.right_click_menu = tk.Menu(root, tearoff=0)  # Creates the right click menu in directory list
+        self.right_click_menu = tk.Menu(self.root, tearoff=0)  # Creates the right click menu in directory list
 
         # Menu bar
-        self.the_menu_bar = tk.Menu(root)
-        root.config(menu=self.the_menu_bar)
+        self.the_menu_bar = tk.Menu(self.root)
+        self.root.config(menu=self.the_menu_bar)
+        self.top = self.root.winfo_toplevel()
+        self.top.rowconfigure(0, weight=1)
+        self.top.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
+        self.root.columnconfigure(0, weight=1)
 
         # File menu
         self.the_file_menu = tk.Menu(self.the_menu_bar, tearoff=0)
@@ -50,15 +62,13 @@ class DrawGui:
             http://ribbed.us
             """))
 
-        # Directory Entry Box
-        self.directory_label = tk.Label(root, text="Directory")
-        self.directory_label.grid(row=1, column=0, sticky=tk.W)
-        self.directory_entry = tk.Entry(root, width=200)
+        #  Directory Entry Box
+        self.directory_entry = tk.Entry(root, text="Directory")
         self.directory_entry.bind("<Return>", self.build_dir_list)
-        self.directory_entry.grid(row=1, column=1, stick=tk.EW)
+        self.directory_entry.pack(side=tk.TOP, expand=tk.NO, anchor=tk.NW, fill=tk.X)
 
         # Filename Tree
-        self.tree = ttk.Treeview(root)
+        self.tree = ttk.Treeview(root)  # Initialize tree
         self.tree["columns"] = ("Filename", "Size", "Date Modified")
         self.tree["show"] = 'headings'  # hide the first column
         self.tree.column("Filename", width=700)
@@ -67,7 +77,15 @@ class DrawGui:
         self.tree.heading("Filename", text="Filename")
         self.tree.heading("Size", text="Size")
         self.tree.heading("Date Modified", text="Date Modified")
-        self.tree.grid(row=2, sticky=tk.EW, columnspan=2)
+        self.tree.pack(fill=tk.BOTH, anchor=tk.NW, expand=tk.YES)
+
+        # Tree scrollbar
+        """ Calling ttk.Scrollbar() for self.tree must come after ttk.Treeview is initialized """
+        self.scrollbar = ttk.Scrollbar(self.tree, orient=tk.VERTICAL, command=self.tree.yview)
+        """ setting 'yscrollcommand' can only be called after ttk.Scrollbar is initialized """
+        self.tree.config(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.tree.yview)
+        self.scrollbar.pack(anchor=tk.NE, fill=tk.Y, expand=tk.YES)
 
         # Right click menu on directory list
         self.right_click_menu.add_command(label="Open", command=self.dir_list_open)
@@ -141,12 +159,7 @@ class DirFuncs:
 
 
 def main():
-    root = tk.Tk()
-
-    DrawGui(root)
-    root.title('vidDB.py')
-
-    root.mainloop()
+    DrawGui()
 
 
 def get_file_size(wanted_size, size):
