@@ -1,6 +1,7 @@
 __author__ = 'Vernon Wenberg III'
 
 import os
+import time
 import operator
 import tkinter as tk
 from tkinter import ttk
@@ -15,57 +16,71 @@ class DrawGui:
         self.entry_string = tk.StringVar()
         self.right_click_menu = tk.Menu(root, tearoff=0)  # Creates the right click menu in directory list
 
-        # START MENU BAR
-        self.theMenuBar = tk.Menu(root)
-        root.config(menu=self.theMenuBar)
+        # Menu bar
+        self.the_menu_bar = tk.Menu(root)
+        root.config(menu=self.the_menu_bar)
 
-        self.theFileMenu = tk.Menu(self.theMenuBar, tearoff=0)  # File sub menu
-        self.theFileMenu.add_command(label="New Database", command=self.create_new_database)
-        self.theFileMenu.add_command(label="Exit", command=lambda: exit(0))
-        self.theAboutMenu = tk.Menu(self.theMenuBar, tearoff=0)  # Help sub menu
-        self.theAboutMenu.add_command(label="About", command=lambda: tk.messagebox.showinfo
-            ("About",
-             """
+        # File menu
+        self.the_file_menu = tk.Menu(self.the_menu_bar, tearoff=0)
+        self.the_menu_bar.add_cascade(label="File", menu=self.the_file_menu)
+        self.the_file_menu.add_command(label="New Database", command=self.create_new_database)
+        self.the_file_menu.add_command(label="Exit", command=lambda: exit(0))
+
+        # Sort by sub-menu
+        """ Each sort option must pass a 'sortby' value which must then be created in self.build_dir_list
+            and class 'DirFuncs'. """
+        self.the_sort_menu = tk.Menu(root, tearoff=0)
+        self.the_sort_menu.add_command(label="Name", command=lambda: self.build_dir_list(sortby="name"))
+        self.the_sort_menu.add_command(label="Size", command=lambda: self.build_dir_list(sortby="size"))
+        self.the_sort_menu.add_command(label="Date modified", command=lambda: self.build_dir_list(sortby="date_modified"))
+
+        # View menu
+        self.the_view_menu = tk.Menu(self.the_menu_bar, tearoff=0)
+        self.the_menu_bar.add_cascade(label="View", menu=self.the_view_menu)
+        self.the_view_menu.add_cascade(label="Sort by", menu=self.the_sort_menu)
+
+        # Help menu
+        self.the_about_menu = tk.Menu(self.the_menu_bar, tearoff=0)
+        self.the_menu_bar.add_cascade(label="Help", menu=self.the_about_menu)
+        self.the_about_menu.add_command(label="About", command=lambda: tk.messagebox.showinfo
+        ("About",
+         """
             vidDB.py
             by Vernon Wenberg III
             http://ribbed.us
             """))
 
-        self.theMenuBar.add_cascade(label="File", menu=self.theFileMenu)
-        self.theMenuBar.add_cascade(label="Help", menu=self.theAboutMenu)
-        # END MENU BAR
-
-        # START Directory Entry Box
+        # Directory Entry Box
         self.directory_label = tk.Label(root, text="Directory")
         self.directory_label.grid(row=1, column=0, sticky=tk.W)
-        self.directory_entry = tk.Entry(root, width=200, textvariable=self.entry_string)
+        self.directory_entry = tk.Entry(root, width=200)
         self.directory_entry.bind("<Return>", self.build_dir_list)
         self.directory_entry.grid(row=1, column=1, stick=tk.EW)
-        # END Directory Entry Box
 
-        # START Filename Tree
+        # Filename Tree
         self.tree = ttk.Treeview(root)
-        self.tree["columns"] = ("Filename", "Size")
+        self.tree["columns"] = ("Filename", "Size", "Date Modified")
         self.tree["show"] = 'headings'  # hide the first column
         self.tree.column("Filename", width=700)
         self.tree.column("Size", width=20)
+        self.tree.column("Date Modified", width=20)
         self.tree.heading("Filename", text="Filename")
         self.tree.heading("Size", text="Size")
+        self.tree.heading("Date Modified", text="Date Modified")
         self.tree.grid(row=2, sticky=tk.EW, columnspan=2)
-        #  END Filename Tree
 
-        # START Right click menu on directory list
+        # Right click menu on directory list
         self.right_click_menu.add_command(label="Open", command=self.dir_list_open)
         self.right_click_menu.add_command(label="Something Something", command=lambda: print("hola!"))
         self.tree.bind("<Button-3>", self.dir_list_right_click_menu)
         # END Right click menu on directory list
 
-    def build_dir_list(self, event=None):
+    def build_dir_list(self, event=None, sortby="name"):
         self.directory_name = self.directory_entry.get()
         for var in self.tree.get_children():
             self.tree.delete(var)
 
-        dir_list = self.dirfuncs.directory_list(self.directory_name)
+        dir_list = self.dirfuncs.directory_list(self.directory_name, sortby)
         if dir_list:
             for a in dir_list:
                 self.tree.insert("", "end", values=a)
@@ -96,22 +111,32 @@ class DirFuncs:
         self.a_list = []
         self.dir_list = []
 
-    def directory_list(self, directory):
+    def directory_list(self, directory, sortby):
         del self.a_list[:]
         del self.dir_list[:]
+
+        if sortby == "name":
+            sort_by_value = 0
+        elif sortby == "size":
+            sort_by_value = 1
+        elif sortby == "date_modified":
+            sort_by_value = 2
+        else:
+            pass
 
         if os.path.isdir(directory):
             dir_path = os.listdir(directory)
             for files in dir_path:
                 fullpath = os.path.join(directory, files)
                 if os.path.isfile(fullpath):
-                    self.a_list.append([files, int(get_file_size("MB", os.path.getsize(fullpath)))])
-            for a in sorted(self.a_list, key=operator.itemgetter(1)):
-                self.dir_list.append([a[0], a[1]])
+                    self.a_list.append(
+                        [files, int(get_file_size("MB", os.path.getsize(fullpath))), os.path.getmtime(fullpath)])
+            for a in sorted(self.a_list, key=operator.itemgetter(sort_by_value)):
+                self.dir_list.append([a[0], a[1], time.ctime(a[2])])
 
             return self.dir_list
         else:
-            tk.messagebox.showerror("Error", "Invalid Directory")
+            tk.messagebox.showerror("Error", "Invalid directory")
             return False
 
 
