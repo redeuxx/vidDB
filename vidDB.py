@@ -10,7 +10,16 @@ import tkinter.messagebox
 import tkinter.filedialog
 
 
-class DrawGui:
+class Options(object):
+    """ Stores the directory sort option that has already been selected. Default sort method is by name. """
+    sortby = None
+
+    @classmethod
+    def set_option(self, sortby):
+        Options.sortby = sortby
+
+
+class DrawGui(Options):
     def __init__(self):
         self.root = tk.Tk()
         self.create_widgets(self.root)
@@ -64,7 +73,7 @@ class DrawGui:
 
         #  Directory Entry Box
         self.directory_entry = tk.Entry(root, text="Directory")
-        self.directory_entry.bind("<Return>", self.build_dir_list)
+        self.directory_entry.bind("<Return>", lambda event: self.build_dir_list(sortby=Options.sortby))
         self.directory_entry.pack(side=tk.TOP, expand=tk.NO, anchor=tk.NW, fill=tk.X)
 
         # Filename Tree
@@ -93,12 +102,17 @@ class DrawGui:
         self.tree.bind("<Button-3>", self.dir_list_right_click_menu)
         # END Right click menu on directory list
 
-    def build_dir_list(self, event=None, sortby="name"):
+    def build_dir_list(self, event=None, sortby=None):
         self.directory_name = self.directory_entry.get()
         for var in self.tree.get_children():
             self.tree.delete(var)
 
-        dir_list = self.dirfuncs.directory_list(self.directory_name, sortby)
+        if sortby is None:
+            Options.set_option("name")
+        else:
+            Options.set_option(sortby)
+
+        dir_list = self.dirfuncs.directory_list(self.directory_name, Options.sortby)
         if dir_list:
             for a in dir_list:
                 self.tree.insert("", "end", values=a)
