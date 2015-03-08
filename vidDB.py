@@ -24,7 +24,8 @@ class DrawGui(Options):
         self.root = tk.Tk()
         self.create_widgets(self.root)
         self.root.title('vidDB.py')
-        self.root.state("zoomed")
+        # self.root.state("zoomed")
+        self.root.geometry("765x700")
         self.root.mainloop()
 
     def create_widgets(self, root):
@@ -53,11 +54,13 @@ class DrawGui(Options):
         self.the_sort_menu = tk.Menu(root, tearoff=0)
         self.the_sort_menu.add_command(label="Name", command=lambda: self.build_dir_list(sortby="name"))
         self.the_sort_menu.add_command(label="Size", command=lambda: self.build_dir_list(sortby="size"))
-        self.the_sort_menu.add_command(label="Date modified", command=lambda: self.build_dir_list(sortby="date_modified"))
+        self.the_sort_menu.add_command(label="Date modified",
+                                       command=lambda: self.build_dir_list(sortby="date_modified"))
 
         # View menu
         self.the_view_menu = tk.Menu(self.the_menu_bar, tearoff=0)
         self.the_menu_bar.add_cascade(label="View", menu=self.the_view_menu)
+        self.the_view_menu.add_command(label="Refresh", command=lambda: self.build_dir_list(sortby=Options.sortby))
         self.the_view_menu.add_cascade(label="Sort by", menu=self.the_sort_menu)
 
         # Help menu
@@ -71,7 +74,7 @@ class DrawGui(Options):
             http://ribbed.us
             """))
 
-        #  Directory Entry Box
+        # Directory Entry Box
         self.directory_entry = tk.Entry(root, text="Directory")
         self.directory_entry.bind("<Return>", lambda event: self.build_dir_list(sortby=Options.sortby))
         self.directory_entry.pack(side=tk.TOP, expand=tk.NO, anchor=tk.NW, fill=tk.X)
@@ -80,9 +83,9 @@ class DrawGui(Options):
         self.tree = ttk.Treeview(root)  # Initialize tree
         self.tree["columns"] = ("Filename", "Size", "Date Modified")
         self.tree["show"] = 'headings'  # hide the first column
-        self.tree.column("Filename", width=700)
-        self.tree.column("Size", width=20)
-        self.tree.column("Date Modified", width=20)
+        self.tree.column("Filename", width=400, stretch=False)
+        self.tree.column("Size", width=150, stretch=False)
+        self.tree.column("Date Modified", width=200, stretch=False)
         self.tree.heading("Filename", text="Filename")
         self.tree.heading("Size", text="Size")
         self.tree.heading("Date Modified", text="Date Modified")
@@ -98,7 +101,7 @@ class DrawGui(Options):
 
         # Right click menu on directory list
         self.right_click_menu.add_command(label="Open", command=self.dir_list_open)
-        self.right_click_menu.add_command(label="Something Something", command=lambda: print("hola!"))
+        self.right_click_menu.add_command(label="Delete", command=self.dir_list_remove)
         self.tree.bind("<Button-3>", self.dir_list_right_click_menu)
         # END Right click menu on directory list
 
@@ -122,6 +125,19 @@ class DrawGui(Options):
             self.tree.bind("<Double-1>", self.dir_list_open)
         else:
             pass
+
+    def dir_list_remove(self):
+        selection_id = self.tree.selection()
+        delete_answer = tk.messagebox.askyesno("Delete File",
+                                               "Are you sure you want to delete {0} files?".format(len(selection_id)))
+        if delete_answer:
+            for item_id in selection_id:
+                print(item_id)
+                item_name = os.path.join(self.directory_name, self.tree.item(item_id)['values'][0])
+                os.remove(item_name)
+        else:
+            pass
+        self.build_dir_list(sortby=Options.sortby)
 
     def dir_list_open(self, event=None):
         item_id = self.tree.focus()
