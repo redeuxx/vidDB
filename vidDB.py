@@ -1,13 +1,12 @@
 __author__ = 'Vernon Wenberg III'
 
-import os
-import time
-import operator
 import tkinter as tk
-from tkinter import ttk
-from sys import exit
+import os
 import tkinter.messagebox
 import tkinter.filedialog
+from tkinter import ttk
+
+import viddb.dirfuncs
 
 
 class Options(object):
@@ -21,20 +20,17 @@ class Options(object):
 
 class DrawGui(Options):
     def __init__(self):
-
         self.root = tk.Tk()
         self.entry_string = tk.StringVar()
         self.dir_checkbutton_state = tk.IntVar()
         self.create_widgets(self.root)
         self.root.title('vidDB.py')
-        # self.root.state("zoomed")
         self.root.geometry("765x700")
         self.root.mainloop()
 
     def create_widgets(self, root):
-        self.dirfuncs = DirFuncs()
+        self.dirfuncs = viddb.dirfuncs.DirFuncs()
 
-        self.right_click_menu = tk.Menu(self.root, tearoff=0)  # Creates the right click menu in directory list
 
         # Menu bar
         self.the_menu_bar = tk.Menu(self.root)
@@ -49,7 +45,7 @@ class DrawGui(Options):
         self.the_file_menu = tk.Menu(self.the_menu_bar, tearoff=0)
         self.the_menu_bar.add_cascade(label="File", menu=self.the_file_menu)
         self.the_file_menu.add_command(label="New Database", command=self.create_new_database)
-        self.the_file_menu.add_command(label="Exit", command=lambda: exit(0))
+        self.the_file_menu.add_command(label="Exit", command=root.quit)
 
         # Sort by sub-menu
         """ Each sort option must pass a 'sortby' value which must then be created in self.build_dir_list
@@ -104,6 +100,7 @@ class DrawGui(Options):
         self.scrollbar.pack(anchor=tk.NE, fill=tk.Y, expand=tk.YES)
 
         # Right click menu on directory list
+        self.right_click_menu = tk.Menu(self.root, tearoff=0)  # Creates the right click menu in directory list
         self.right_click_menu.add_command(label="Open", command=self.dir_list_open)
         self.right_click_menu.add_command(label="Delete", command=self.dir_list_remove)
         self.tree.bind("<Button-3>", self.dir_list_right_click_menu)
@@ -116,8 +113,6 @@ class DrawGui(Options):
         return checkbutton_state
 
     def build_dir_list(self, event=None, sortby=None):
-        print(type(self.dir_checkbutton_state))
-        print(self.get_show_dir_checkb_val())
         self.directory_name = self.directory_entry.get()
         for var in self.tree.get_children():
             self.tree.delete(var)
@@ -174,93 +169,8 @@ class DrawGui(Options):
         print(self.database_location)
 
 
-class DirFuncs:
-    def __init__(self):
-        self.a_list = []
-        self.dir_file_list = []
-        self.dir_dir_list = []
-
-    def size_of(num, suffix='B'):
-        for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
-            if abs(num) < 1024.0:
-                return "%3.1f%s%s" % (num, unit, suffix)
-            num /= 1024.0
-        return "%.1f%s%s" % (num, 'Yi', suffix)
-
-    def directory_file_list(self, directory, sortby):
-        del self.a_list[:]
-        del self.dir_file_list[:]
-
-        if sortby == "name":
-            sort_by_value = 0
-        elif sortby == "size":
-            sort_by_value = 1
-        elif sortby == "date_modified":
-            sort_by_value = 2
-        else:
-            pass
-
-        if os.path.isdir(directory):
-            dir_path = os.listdir(directory)
-            for files in dir_path:
-                fullpath = os.path.join(directory, files)
-                if os.path.isfile(fullpath):
-                    self.a_list.append(
-                        [files, os.path.getsize(fullpath), os.path.getmtime(fullpath)])
-                else:
-                    pass
-            for a in sorted(self.a_list, key=operator.itemgetter(sort_by_value)):
-                self.dir_file_list.append([a[0], a[1], time.ctime(a[2])])
-            return self.dir_file_list
-        else:
-            return False
-
-    def directory_dir_list(self, directory, sortby):
-        """
-        :param : Accepts a directory.
-        :return: Returns a list[0:2] with filename, size, date modified
-        """
-        del self.a_list[:]
-        del self.dir_dir_list[:]
-
-        if sortby == "name":
-            sort_by_value = 0
-        elif sortby == "size":
-            sort_by_value = 0
-        elif sortby == "date_modified":
-            sort_by_value = 2
-        else:
-            pass
-
-        if os.path.isdir(directory):
-            dir_path = os.listdir(directory)
-            for dir in dir_path:
-                fullpath = os.path.join(directory, dir)
-                if os.path.isdir(fullpath):
-                    self.a_list.append(
-                        [dir, os.path.getmtime(fullpath)])
-                else:
-                    pass
-
-            for a in sorted(self.a_list, key=operator.itemgetter(sort_by_value)):
-                self.dir_dir_list.append([a[0], "", time.ctime(a[1])])
-            return self.dir_dir_list
-        else:
-            return False
-
-
 def main():
     DrawGui()
-
-
-def get_file_size(wanted_size, size):
-    if wanted_size == "KB":
-        return_size = size / 8192
-    elif wanted_size == "MB":
-        return_size = size / 1048576
-
-    return return_size
-
 
 if __name__ == "__main__":
     main()
