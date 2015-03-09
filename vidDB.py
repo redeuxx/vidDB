@@ -21,7 +21,10 @@ class Options(object):
 
 class DrawGui(Options):
     def __init__(self):
+
         self.root = tk.Tk()
+        self.entry_string = tk.StringVar()
+        self.dir_checkbutton_state = tk.IntVar()
         self.create_widgets(self.root)
         self.root.title('vidDB.py')
         # self.root.state("zoomed")
@@ -30,7 +33,7 @@ class DrawGui(Options):
 
     def create_widgets(self, root):
         self.dirfuncs = DirFuncs()
-        self.entry_string = tk.StringVar()
+
         self.right_click_menu = tk.Menu(self.root, tearoff=0)  # Creates the right click menu in directory list
 
         # Menu bar
@@ -61,6 +64,7 @@ class DrawGui(Options):
         self.the_view_menu = tk.Menu(self.the_menu_bar, tearoff=0)
         self.the_menu_bar.add_cascade(label="View", menu=self.the_view_menu)
         self.the_view_menu.add_command(label="Refresh", command=lambda: self.build_dir_list(sortby=Options.sortby))
+        self.the_view_menu.add_checkbutton(label="Hide directories", variable=self.dir_checkbutton_state, command=lambda: self.build_dir_list(sortby=Options.sortby))
         self.the_view_menu.add_cascade(label="Sort by", menu=self.the_sort_menu)
 
         # Help menu
@@ -103,28 +107,45 @@ class DrawGui(Options):
         self.right_click_menu.add_command(label="Open", command=self.dir_list_open)
         self.right_click_menu.add_command(label="Delete", command=self.dir_list_remove)
         self.tree.bind("<Button-3>", self.dir_list_right_click_menu)
-        # END Right click menu on directory list
+
+    def get_show_dir_checkb_val(self):
+        """
+        :return: checks the stae of the 'Show directories' option and returns 1 or 0
+        """
+        checkbutton_state = self.dir_checkbutton_state.get()
+        return checkbutton_state
 
     def build_dir_list(self, event=None, sortby=None):
+        print(type(self.dir_checkbutton_state))
+        print(self.get_show_dir_checkb_val())
         self.directory_name = self.directory_entry.get()
         for var in self.tree.get_children():
             self.tree.delete(var)
 
+        # Set sort method if not set, otherwise use existing sort method
         if sortby is None:
             Options.set_option("name")
         else:
             Options.set_option(sortby)
 
-        dir_list = self.dirfuncs.directory_list(self.directory_name, Options.sortby)
-        if dir_list:
-            for a in dir_list:
-                self.tree.insert("", "end", values=a)
-            # TODO: Adjust column width to longest filename
-            # TODO: Add size indicator (eg: MB, KB, GB)
-            # self.tree.column("Filename", width=50)
-            self.tree.bind("<Double-1>", self.dir_list_open)
+        # If directory exists, list contents, otherwise pop-up an error
+        if os.path.isdir(self.directory_name):
+            # Only get directories if Hide directories option is not selected
+            if self.get_show_dir_checkb_val() == 0:
+                dir_dir_list = self.dirfuncs.directory_dir_list(self.directory_name, Options.sortby)
+                if dir_dir_list:
+                    for a in dir_dir_list:
+                        self.tree.insert("", "end", values=a)
+
+            dir_file_list = self.dirfuncs.directory_file_list(self.directory_name, Options.sortby)
+            if dir_file_list:
+                for a in dir_file_list:
+                    self.tree.insert("", "end", values=a)
+                self.tree.bind("<Double-1>", self.dir_list_open)
+            else:
+                pass
         else:
-            pass
+            tk.messagebox.showerror("Error", "Directory does not exist")
 
     def dir_list_remove(self):
         selection_id = self.tree.selection()
@@ -132,7 +153,6 @@ class DrawGui(Options):
                                                "Are you sure you want to delete {0} files?".format(len(selection_id)))
         if delete_answer:
             for item_id in selection_id:
-                print(item_id)
                 item_name = os.path.join(self.directory_name, self.tree.item(item_id)['values'][0])
                 os.remove(item_name)
         else:
@@ -157,11 +177,19 @@ class DrawGui(Options):
 class DirFuncs:
     def __init__(self):
         self.a_list = []
-        self.dir_list = []
+        self.dir_file_list = []
+        self.dir_dir_list = []
 
-    def directory_list(self, directory, sortby):
+    def size_of(num, suffix='B'):
+        for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+            if abs(num) < 1024.0:
+                return "%3.1f%s%s" % (num, unit, suffix)
+            num /= 1024.0
+        return "%.1f%s%s" % (num, 'Yi', suffix)
+
+    def directory_file_list(self, directory, sortby):
         del self.a_list[:]
-        del self.dir_list[:]
+        del self.dir_file_list[:]
 
         if sortby == "name":
             sort_by_value = 0
@@ -178,13 +206,46 @@ class DirFuncs:
                 fullpath = os.path.join(directory, files)
                 if os.path.isfile(fullpath):
                     self.a_list.append(
-                        [files, int(get_file_size("MB", os.path.getsize(fullpath))), os.path.getmtime(fullpath)])
+                        [files, os.path.getsize(fullpath), os.path.getmtime(fullpath)])
+                else:
+                    pass
             for a in sorted(self.a_list, key=operator.itemgetter(sort_by_value)):
-                self.dir_list.append([a[0], a[1], time.ctime(a[2])])
-
-            return self.dir_list
+                self.dir_file_list.append([a[0], a[1], time.ctime(a[2])])
+            return self.dir_file_list
         else:
-            tk.messagebox.showerror("Error", "Invalid directory")
+            return False
+
+    def directory_dir_list(self, directory, sortby):
+        """
+        :param : Accepts a directory.
+        :return: Returns a list[0:2] with filename, size, date modified
+        """
+        del self.a_list[:]
+        del self.dir_dir_list[:]
+
+        if sortby == "name":
+            sort_by_value = 0
+        elif sortby == "size":
+            sort_by_value = 0
+        elif sortby == "date_modified":
+            sort_by_value = 2
+        else:
+            pass
+
+        if os.path.isdir(directory):
+            dir_path = os.listdir(directory)
+            for dir in dir_path:
+                fullpath = os.path.join(directory, dir)
+                if os.path.isdir(fullpath):
+                    self.a_list.append(
+                        [dir, os.path.getmtime(fullpath)])
+                else:
+                    pass
+
+            for a in sorted(self.a_list, key=operator.itemgetter(sort_by_value)):
+                self.dir_dir_list.append([a[0], "", time.ctime(a[1])])
+            return self.dir_dir_list
+        else:
             return False
 
 
