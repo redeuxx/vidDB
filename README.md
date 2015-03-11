@@ -1,3 +1,3 @@
 # vidDB
 
-A practical exercise to make something I would use personally and learn Python.
+An app made using Python/Tkinter to manage video files.

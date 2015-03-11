@@ -4,18 +4,20 @@ import os
 import operator
 import time
 
+
+def size_of(num, suffix='B'):
+    for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
+
+
 class DirFuncs:
     def __init__(self):
         self.a_list = []
         self.dir_file_list = []
         self.dir_dir_list = []
-
-    def size_of(num, suffix='B'):
-        for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
-            if abs(num) < 1024.0:
-                return "%3.1f%s%s" % (num, unit, suffix)
-            num /= 1024.0
-        return "%.1f%s%s" % (num, 'Yi', suffix)
 
     def directory_file_list(self, directory, sortby):
         del self.a_list[:]
@@ -40,7 +42,7 @@ class DirFuncs:
                 else:
                     pass
             for a in sorted(self.a_list, key=operator.itemgetter(sort_by_value)):
-                self.dir_file_list.append([a[0], a[1], time.ctime(a[2])])
+                self.dir_file_list.append([a[0], size_of(a[1]), time.ctime(a[2])])
             return self.dir_file_list
         else:
             return False
@@ -58,7 +60,7 @@ class DirFuncs:
         elif sortby == "size":
             sort_by_value = 0
         elif sortby == "date_modified":
-            sort_by_value = 2
+            sort_by_value = 1
         else:
             pass
 
@@ -67,8 +69,11 @@ class DirFuncs:
             for dir in dir_path:
                 fullpath = os.path.join(directory, dir)
                 if os.path.isdir(fullpath):
-                    self.a_list.append(
-                        [dir, os.path.getmtime(fullpath)])
+                    try:  # On Windows permission error. Don't even get the directory last modified value.
+                        self.a_list.append(
+                            [dir, os.path.getmtime(fullpath)])
+                    except PermissionError:
+                        self.a_list.append([dir, 0])
                 else:
                     pass
 

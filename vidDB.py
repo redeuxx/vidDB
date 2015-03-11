@@ -14,7 +14,7 @@ class Options(object):
     sortby = None
 
     @classmethod
-    def set_option(self, sortby):
+    def set_option(cls, sortby):
         Options.sortby = sortby
 
 
@@ -30,7 +30,6 @@ class DrawGui(Options):
 
     def create_widgets(self, root):
         self.dirfuncs = viddb.dirfuncs.DirFuncs()
-
 
         # Menu bar
         self.the_menu_bar = tk.Menu(self.root)
