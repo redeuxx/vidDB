@@ -31,7 +31,7 @@ class DrawGui(Options):
         self.dir_checkbutton_state = tk.IntVar()
         self.create_widgets(self.root)
         self.root.title('vidDB.py')
-        self.root.geometry("765x700")
+        self.root.geometry("1024x765")
         self.root.mainloop()
 
     def create_widgets(self, root):
@@ -85,11 +85,10 @@ class DrawGui(Options):
             """))
 
         # Directory Entry Box
-        self.directory_entry = tk.Entry(root, takefocus=True)
-        # self.directory_entry.insert(tk.END, Options.current_directory)
+        self.directory_entry = tk.Entry(root, width=765, takefocus=True)
         self.directory_entry.bind("<Return>",
                                   lambda event: self.build_dir_list(self.directory_entry.get(), sortby=Options.sortby))
-        self.directory_entry.pack(side=tk.TOP, expand=tk.NO, anchor=tk.NW, fill=tk.X)
+        self.directory_entry.pack(side=tk.TOP, expand=tk.NO, anchor=tk.NW)
 
         # Filename Tree
         self.tree = ttk.Treeview(root)  # Initialize tree
@@ -102,6 +101,10 @@ class DrawGui(Options):
         self.tree.heading("Size", text="Size")
         self.tree.heading("Date Modified", text="Date Modified")
         self.tree.pack(fill=tk.BOTH, anchor=tk.NW, expand=tk.YES)
+
+        # Image View Canvas
+        self.the_canvas_widget = tk.Canvas(root, height=400)
+        self.the_canvas_widget.pack(anchor=tk.NE, side=tk.RIGHT, expand=tk.YES, fill=tk.BOTH)
 
         # Tree scrollbar
         # Calling ttk.Scrollbar() for self.tree must come after ttk.Treeview is initialized
@@ -151,10 +154,9 @@ class DrawGui(Options):
         self.directory_entry.delete(0, tk.END)
         self.directory_entry.insert(0, Options.current_directory)
 
-        # TODO: implement up folder navigation
         # If current path is not a mount point, display up folder selection
         if os.path.ismount(os.path.abspath(self.directory_name)) is False:
-            self.tree.insert("", "end", tags="up_parent", values="..")
+            self.tree.insert("", "end", tags="folder", values="..")
 
         # If directory exists, list contents, otherwise pop-up an error
         if os.path.isdir(self.directory_name):
@@ -174,6 +176,7 @@ class DrawGui(Options):
                 pass
             self.tree.tag_bind("folder", "<Double-Button-1>", self.dir_list_open_dir)
             self.tree.tag_bind("file", "<Double-Button-1>", self.dir_list_open)
+
 
         else:
             tk.messagebox.showerror("Error", "Directory does not exist")
