@@ -1,3 +1,5 @@
+#! /usr/bin/python3.4
+
 __author__ = 'Vernon Wenberg III'
 
 import tkinter as tk
