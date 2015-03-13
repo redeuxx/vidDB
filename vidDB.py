@@ -117,7 +117,7 @@ class DrawGui(Options):
         # Right click menu on directory list
         self.right_click_menu = tk.Menu(self.root, tearoff=0)  # Creates the right click menu in directory list
         self.right_click_menu.add_command(label="Open", command=self.dir_list_open)
-        self.right_click_menu.add_command(label="Delete", command=self.dir_list_remove)
+        self.right_click_menu.add_command(label="Delete", command=self.dir_list_file_remove)
         self.tree.bind("<Button-3>", self.dir_list_right_click_menu)
 
     # checks the state of the 'Show directories' option and returns 1 or 0
@@ -130,13 +130,16 @@ class DrawGui(Options):
         # IndexError exception appears when there is no current directory. This is expected on first run.
         try:
             item_id = self.tree.focus()
-            item_name = os.path.join(self.directory_name, self.tree.item(item_id)['values'][0])
-            return item_name
+            if item_id:
+                item_name = os.path.join(self.directory_name, self.tree.item(item_id)['values'][0])
+                return item_name
+            else:
+                return None
         except IndexError:
             pass
 
+    # Builds the main directory list.
     def build_dir_list(self, directory_name=None, sortby=None):
-        # self.directory_name = self.directory_entry.get()
         self.directory_name = os.path.abspath(directory_name)
         for var in self.tree.get_children():
             self.tree.delete(var)
@@ -181,7 +184,8 @@ class DrawGui(Options):
         else:
             tk.messagebox.showerror("Error", "Directory does not exist")
 
-    def dir_list_remove(self):
+    # Delete a file or files from selection.
+    def dir_list_file_remove(self):
         selection_id = self.tree.selection()
         delete_answer = tk.messagebox.askyesno("Delete File",
                                                "Are you sure you want to delete {0} files?".format(len(selection_id)))
@@ -193,6 +197,7 @@ class DrawGui(Options):
             pass
         self.build_dir_list(sortby=Options.sortby)
 
+    # Open directory in directory list
     def dir_list_open_dir(self, event=None):
         item_id = self.tree.focus()
         item_name = os.path.join(str(self.directory_name), str(self.tree.item(item_id)['values'][0]))
@@ -200,13 +205,19 @@ class DrawGui(Options):
         # consist of numbers.
         self.build_dir_list(item_name)
 
+    # Open file
     def dir_list_open(self, event=None):
         item_id = self.tree.focus()
         item_name = os.path.join(self.directory_name, self.tree.item(item_id)["values"][0])
         os.startfile(item_name)
 
+    # Show right click menu at mouse pointer coordinates.
+    # Only show menu if the list is not empty and there are entries chosen.
     def dir_list_right_click_menu(self, event):
-        self.right_click_menu.post(event.x_root, event.y_root)
+        if self.get_tree_focus():
+            self.right_click_menu.post(event.x_root, event.y_root)
+        else:
+            pass
 
     def create_new_database(self):
         self.database_location = tk.filedialog.asksaveasfilename(title="Create new database",
