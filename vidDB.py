@@ -162,7 +162,7 @@ class DrawGui(Options):
     def dir_list_right_click_menu(self, event):
         self.right_click_menu.post(event.x_root, event.y_root)
 
-    def new_database(self):
+    def new_database(self): #builds VDB file from a list of media files
         self.media_folder = tk.filedialog.askdirectory(title="open folder")
 
         for root, dirs, files in os.walk(self.media_folder):
