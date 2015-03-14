@@ -1,11 +1,11 @@
 __author__ = 'Vernon Wenberg III'
 
+from tkinter import ttk
 import tkinter as tk
+
 import os
 import tkinter.messagebox
 import tkinter.filedialog
-from tkinter import ttk
-
 import viddb.dirfuncs
 
 
@@ -43,7 +43,8 @@ class DrawGui(Options):
         # File menu
         self.the_file_menu = tk.Menu(self.the_menu_bar, tearoff=0)
         self.the_menu_bar.add_cascade(label="File", menu=self.the_file_menu)
-        self.the_file_menu.add_command(label="New Database", command=self.create_new_database)
+        self.the_file_menu.add_command(label="New Database", command=self.new_database)
+        self.the_file_menu.add_command(label="Import Database", command=self.import_database)
         self.the_file_menu.add_command(label="Exit", command=root.quit)
 
         # Sort by sub-menu
@@ -106,7 +107,7 @@ class DrawGui(Options):
 
     def get_show_dir_checkb_val(self):
         """
-        :return: checks the stae of the 'Show directories' option and returns 1 or 0
+        :return: checks the state of the 'Show directories' option and returns 1 or 0
         """
         checkbutton_state = self.dir_checkbutton_state.get()
         return checkbutton_state
@@ -161,8 +162,16 @@ class DrawGui(Options):
     def dir_list_right_click_menu(self, event):
         self.right_click_menu.post(event.x_root, event.y_root)
 
-    def create_new_database(self):
-        self.database_location = tk.filedialog.asksaveasfilename(title="Create new database",
+    def new_database(self):
+        self.media_folder = tk.filedialog.askdirectory(title="open folder")
+
+        for root, dirs, files in os.walk(self.media_folder):
+            for file in files:
+                if file.endswith((".mp4",".avi",".flv",".wmv",".mov")):
+                    print(file)
+
+    def import_database(self):
+        self.database_location = tk.filedialog.asksaveasfilename(title="import database",
                                                                  filetypes=[("Video Database", "*.vdb")],
                                                                  defaultextension=".vdb")
         print(self.database_location)
