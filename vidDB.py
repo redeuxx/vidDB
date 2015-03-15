@@ -2,8 +2,6 @@ __author__ = 'Vernon Wenberg III'
 
 import tkinter as tk
 import os
-import dataset
-import sqlite3
 import tkinter.messagebox
 import tkinter.filedialog
 from tkinter import ttk
@@ -228,19 +226,7 @@ class DrawGui(Options):
     def new_database(self): # builds VDB file from a list of media files
         self.media_folder = tk.filedialog.askdirectory(title="open folder")
         new_database_name = 'movies.vdb' # use TK to ask user for name
-        db = dataset.connect(('sqlite:///' + new_database_name))
-        table = db['test']
-        # tk.messagebox('this may take a few minutes')
-        for root, dirs, files in os.walk(self.media_folder):
-            for file in files:
-                if file.endswith((".mp4", ".avi", ".flv", ".wmv", ".mov")):
-                    if table.find_one(title=file[:-4]) is None:
-                        table.insert(dict(title=file[:-4], location=(root + '/' + file), genre='none', length='none'))
-                        print(root + '/' + file)
-                    else:
-                        pass
-                else:
-                    pass
+
         print('done')
 
     def open_database(self):
