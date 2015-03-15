@@ -2,6 +2,8 @@ __author__ = 'Vernon Wenberg III'
 
 import tkinter as tk
 import os
+import dataset
+import sqlite3
 import tkinter.messagebox
 import tkinter.filedialog
 from tkinter import ttk
@@ -50,7 +52,7 @@ class DrawGui(Options):
         self.the_file_menu = tk.Menu(self.the_menu_bar, tearoff=0)
         self.the_menu_bar.add_cascade(label="File", menu=self.the_file_menu)
         self.the_file_menu.add_command(label="New Database", command=self.new_database)
-        self.the_file_menu.add_command(label="Import Database", command=self.import_database)
+        self.the_file_menu.add_command(label="Open Database", command=self.open_database)
         self.the_file_menu.add_command(label="Exit", command=root.quit)
 
         # Sort by sub-menu
@@ -223,16 +225,26 @@ class DrawGui(Options):
         else:
             pass
 
-    def new_database(self): #builds VDB file from a list of media files
+    def new_database(self): # builds VDB file from a list of media files
         self.media_folder = tk.filedialog.askdirectory(title="open folder")
-
+        new_database_name = 'movies.vdb' # use TK to ask user for name
+        db = dataset.connect(('sqlite:///' + new_database_name))
+        table = db['test']
+        # tk.messagebox('this may take a few minutes')
         for root, dirs, files in os.walk(self.media_folder):
             for file in files:
-                if file.endswith((".mp4",".avi",".flv",".wmv",".mov")):
-                    print(file)
+                if file.endswith((".mp4", ".avi", ".flv", ".wmv", ".mov")):
+                    if table.find_one(title=file[:-4]) is None:
+                        table.insert(dict(title=file[:-4], location=(root + '/' + file), genre='none', length='none'))
+                        print(root + '/' + file)
+                    else:
+                        pass
+                else:
+                    pass
+        print('done')
 
-    def import_database(self):
-        self.database_location = tk.filedialog.asksaveasfilename(title="import database",
+    def open_database(self):
+        self.database_location = tk.filedialog.askopenfilename(title="open database",
                                                                  filetypes=[("Video Database", "*.vdb")],
                                                                  defaultextension=".vdb")
         print(self.database_location)
