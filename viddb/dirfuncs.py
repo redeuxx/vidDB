@@ -6,6 +6,11 @@ import time
 
 
 def size_of(num, suffix='B'):
+    """
+    @:desc   Generates human readable file sizes
+    @:param  num - long
+    @:return Returns a human readable file size in a string variable
+    """
     for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
         if abs(num) < 1024.0:
             return "%3.1f%s%s" % (num, unit, suffix)
@@ -20,6 +25,11 @@ class DirFuncs:
         self.dir_dir_list = []
 
     def directory_file_list(self, directory, sortby):
+        """
+        @:desc   Builds a list of files, sans directories.
+        @:param  directory - string, sortby - string
+        @:return Returns a list[0:2] with filename, size, date modified.
+        """
         del self.a_list[:]
         del self.dir_file_list[:]
 
@@ -49,8 +59,9 @@ class DirFuncs:
 
     def directory_dir_list(self, directory, sortby):
         """
-        :param : Accepts a directory.
-        :return: Returns a list[0:2] with filename, size, date modified
+        @:desc   Builds a list of directories, sans files.
+        @:param  directory - string, sortby - string
+        @:return Returns a list[0:2] with filename, " ", date modified.
         """
         del self.a_list[:]
         del self.dir_dir_list[:]

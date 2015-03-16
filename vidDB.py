@@ -12,7 +12,9 @@ import viddb.dirfuncs
 
 
 class Options(object):
-    """ Stores the directory sort option that has already been selected. Default sort method is by name. """
+    """
+    Stores the directory sort option that has already been selected. Default sort method is by name.
+    """
     sortby = None
     current_directory = ""
 
@@ -26,7 +28,9 @@ class Options(object):
 
 
 class DrawGui(Options):
-    """ Draws the main GUI """
+    """
+    Draws the main GUI
+    """
     def __init__(self):
         self.root = tk.Tk()
         self.entry_string = tk.StringVar()
@@ -37,6 +41,9 @@ class DrawGui(Options):
         self.root.mainloop()
 
     def create_widgets(self, root):
+        """
+        Draws the main window and the majority of GUI widgets
+        """
         self.dirfuncs = viddb.dirfuncs.DirFuncs()
 
         # Menu bar
@@ -124,16 +131,17 @@ class DrawGui(Options):
         self.right_click_menu.add_command(label="Delete", command=self.dir_list_file_remove)
         self.tree.bind("<Button-3>", self.dir_list_right_click_menu)
 
-    # checks the state of the 'Show directories' option and returns 1 or 0
     def get_show_dir_checkb_val(self):
         """
-        :return: checks the state of the 'Show directories' option and returns 1 or 0
+        checks the state of the 'Show directories' option and returns 1 or 0
         """
         checkbutton_state = self.dir_checkbutton_state.get()
         return checkbutton_state
 
-    # Return the full directory/file path
     def get_tree_focus(self):
+        """
+        Return the full directory/file path
+        """
         # IndexError exception appears when there is no current directory. This is expected on first run.
         try:
             item_id = self.tree.focus()
@@ -145,8 +153,10 @@ class DrawGui(Options):
         except IndexError:
             pass
 
-    # Builds the main directory list.
     def build_dir_list(self, directory_name=None, sortby=None):
+        """
+        Builds the main directory list.
+        """
         self.directory_name = os.path.abspath(directory_name)
         for var in self.tree.get_children():
             self.tree.delete(var)
@@ -191,8 +201,10 @@ class DrawGui(Options):
         else:
             tk.messagebox.showerror("Error", "Directory does not exist")
 
-    # Delete a file or files from selection.
     def dir_list_file_remove(self):
+        """
+        Delete a file or files from selection.
+        """
         selection_id = self.tree.selection()
         delete_answer = tk.messagebox.askyesno("Delete File",
                                                "Are you sure you want to delete {0} files?".format(len(selection_id)))
@@ -204,23 +216,29 @@ class DrawGui(Options):
         else:
             pass
 
-    # Open directory in directory list
     def dir_list_open_dir(self, event=None):
+        """
+        Open directory in directory list
+        """
         item_id = self.tree.focus()
         item_name = os.path.join(str(self.directory_name), str(self.tree.item(item_id)['values'][0]))
         # os.path.join requires a string, must convert directory names to strings in case of directories that only
         # consist of numbers.
         self.build_dir_list(item_name)
 
-    # Open file
     def dir_list_open(self, event=None):
+        """
+        @:desc      Open file. This function uses the currently selected item in the directory list.
+        """
         item_id = self.tree.focus()
         item_name = os.path.join(self.directory_name, self.tree.item(item_id)["values"][0])
         os.startfile(item_name)
 
-    # Show right click menu at mouse pointer coordinates.
-    # Only show menu if the list is not empty and there are entries chosen.
     def dir_list_right_click_menu(self, event):
+        """
+        @:desc      Show right click menu at mouse pointer coordinates. Only show menu if the list is not empty and
+                    there are entries chosen.
+        """
         if self.get_tree_focus():
             self.right_click_menu.post(event.x_root, event.y_root)
         else:
