@@ -195,9 +195,9 @@ class DrawGui(Options):
             for item_id in selection_id:
                 item_name = os.path.join(self.directory_name, self.tree.item(item_id)['values'][0])
                 os.remove(item_name)
+                self.build_dir_list(sortby=Options.sortby)
         else:
             pass
-        self.build_dir_list(sortby=Options.sortby)
 
     # Open directory in directory list
     def dir_list_open_dir(self, event=None):
