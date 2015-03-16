@@ -226,11 +226,12 @@ class DrawGui(Options):
         else:
             pass
 
-    def new_database(self): # builds VDB file from a list of media files
+    def new_database(self):  # builds VDB file from a list of media files
+        dbfunc = viddb.dbfuncs.Dbfuncs()
         media_folder = tk.filedialog.askdirectory(title="open folder")
         new_database_name = (tk.simpledialog.askstring(title='name new database',
                                                        prompt='name the new database') + '.vdb')
-        viddb.dbfuncs.Dbfuncs.make_new_database(new_database_name, media_folder)
+        dbfunc.make_new_database(new_database_name, media_folder)
 
     def sync_database(self):  # not working yet
         viddb.dbfuncs.Dbfuncs.check_current()
@@ -244,7 +245,6 @@ class DrawGui(Options):
 
 def main():
     DrawGui()
-
 
 if __name__ == "__main__":
     main()
