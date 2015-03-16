@@ -228,7 +228,7 @@ class DrawGui(Options):
 
     def dir_list_open(self, event=None):
         """
-        @:desc      Open file. This function uses the currently selected item in the directory list.
+        Open file. This function uses the currently selected item in the directory list.
         """
         item_id = self.tree.focus()
         item_name = os.path.join(self.directory_name, self.tree.item(item_id)["values"][0])
@@ -236,8 +236,8 @@ class DrawGui(Options):
 
     def dir_list_right_click_menu(self, event):
         """
-        @:desc      Show right click menu at mouse pointer coordinates. Only show menu if the list is not empty and
-                    there are entries chosen.
+        Show right click menu at mouse pointer coordinates. Only show menu if the list is not empty and there are
+        entries chosen.
         """
         if self.get_tree_focus():
             self.right_click_menu.post(event.x_root, event.y_root)
