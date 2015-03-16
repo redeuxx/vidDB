@@ -1,13 +1,13 @@
-#! /usr/bin/python3.4
-
 __author__ = 'Vernon Wenberg III'
 
 import tkinter as tk
 import os
 import tkinter.messagebox
 import tkinter.filedialog
+import tkinter.simpledialog
 from tkinter import ttk
 
+import viddb.dbfuncs
 import viddb.dirfuncs
 
 
@@ -51,7 +51,9 @@ class DrawGui(Options):
         # File menu
         self.the_file_menu = tk.Menu(self.the_menu_bar, tearoff=0)
         self.the_menu_bar.add_cascade(label="File", menu=self.the_file_menu)
-        self.the_file_menu.add_command(label="New Database", command=self.create_new_database)
+        self.the_file_menu.add_command(label="sync", command=self.sync_database)
+        self.the_file_menu.add_command(label="New Database", command=self.new_database)
+        self.the_file_menu.add_command(label="Open Database", command=self.open_database)
         self.the_file_menu.add_command(label="Exit", command=root.quit)
 
         # Sort by sub-menu
@@ -124,6 +126,9 @@ class DrawGui(Options):
 
     # checks the state of the 'Show directories' option and returns 1 or 0
     def get_show_dir_checkb_val(self):
+        """
+        :return: checks the state of the 'Show directories' option and returns 1 or 0
+        """
         checkbutton_state = self.dir_checkbutton_state.get()
         return checkbutton_state
 
@@ -221,8 +226,17 @@ class DrawGui(Options):
         else:
             pass
 
-    def create_new_database(self):
-        self.database_location = tk.filedialog.asksaveasfilename(title="Create new database",
+    def new_database(self): # builds VDB file from a list of media files
+        media_folder = tk.filedialog.askdirectory(title="open folder")
+        new_database_name = (tk.simpledialog.askstring(title='name new database',
+                                                       prompt='name the new database') + '.vdb')
+        viddb.dbfuncs.Dbfuncs.make_new_database(new_database_name, media_folder)
+
+    def sync_database(self):  # not working yet
+        viddb.dbfuncs.Dbfuncs.check_current()
+
+    def open_database(self):
+        self.database_location = tk.filedialog.askopenfilename(title="open database",
                                                                  filetypes=[("Video Database", "*.vdb")],
                                                                  defaultextension=".vdb")
         print(self.database_location)
