@@ -6,6 +6,7 @@ import tkinter.messagebox
 import tkinter.filedialog
 import tkinter.simpledialog
 from tkinter import ttk
+import subprocess
 
 import viddb.dbfuncs
 import viddb.dirfuncs
@@ -245,14 +246,10 @@ class DrawGui(Options):
             pass
 
     def new_database(self):  # builds VDB file from a list of media files
-        dbfunc = viddb.dbfuncs.Dbfuncs()
-        media_folder = tk.filedialog.askdirectory(title="open folder")
-        new_database_name = (tk.simpledialog.askstring(title='name new database',
-                                                       prompt='name the new database') + '.vdb')
-        dbfunc.make_new_database(new_database_name, media_folder)
+        subprocess.Popen(['python3', 'subprocess/make_new_database.py'])
 
     def sync_database(self):  # not working yet
-        viddb.dbfuncs.Dbfuncs.check_current()
+        viddb.dbfuncs.Dbfuncs.check_current(self)
 
     def open_database(self):
         self.database_location = tk.filedialog.askopenfilename(title="open database",
