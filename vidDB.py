@@ -1,3 +1,5 @@
+import sys
+
 __author__ = 'Vernon Wenberg III'
 
 import tkinter as tk
@@ -246,7 +248,13 @@ class DrawGui(Options):
             pass
 
     def new_database(self):  # builds VDB file from a list of media files
-        subprocess.Popen(['python3', 'subprocess/make_new_database.py'])
+        media_folder = tk.filedialog.askdirectory(title="open folder")
+        new_database_name = (tk.simpledialog.askstring(title='name new database',
+                                                   prompt='name the new database'))
+        try:
+            subprocess.check_call([sys.executable, 'make_new_database.py', new_database_name, media_folder])
+        except:
+            print("Some weird shit happened.")
 
     def sync_database(self):  # not working yet
         viddb.dbfuncs.Dbfuncs.check_current(self)
@@ -259,6 +267,7 @@ class DrawGui(Options):
 
 
 def main():
+    print(sys.executable)
     DrawGui()
 
 if __name__ == "__main__":
