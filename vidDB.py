@@ -1,5 +1,3 @@
-import sys
-
 __author__ = 'Vernon Wenberg III'
 
 import tkinter as tk
@@ -9,6 +7,7 @@ import tkinter.filedialog
 import tkinter.simpledialog
 from tkinter import ttk
 import subprocess
+import sys
 
 import viddb.dbfuncs
 import viddb.dirfuncs
