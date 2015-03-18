@@ -1,5 +1,3 @@
-import sys
-
 __author__ = 'Vernon Wenberg III'
 
 import tkinter as tk
@@ -9,6 +7,7 @@ import tkinter.filedialog
 import tkinter.simpledialog
 from tkinter import ttk
 import subprocess
+import sys
 
 import viddb.dbfuncs
 import viddb.dirfuncs
@@ -200,7 +199,6 @@ class DrawGui(Options):
             self.tree.tag_bind("folder", "<Double-Button-1>", self.dir_list_open_dir)
             self.tree.tag_bind("file", "<Double-Button-1>", self.dir_list_open)
 
-
         else:
             tk.messagebox.showerror("Error", "Directory does not exist")
 
@@ -267,7 +265,6 @@ class DrawGui(Options):
 
 
 def main():
-    print(sys.executable)
     DrawGui()
 
 if __name__ == "__main__":
